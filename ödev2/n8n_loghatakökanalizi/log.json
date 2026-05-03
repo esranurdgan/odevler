@@ -1,0 +1,255 @@
+{
+  "name": "log",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        -304
+      ],
+      "id": "5aa804d5-2116-4a64-a8c3-6d03fabfa77b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\Users\\Esra\\.n8n-files\\*.log",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -128,
+        -304
+      ],
+      "id": "92fe1dfc-2fb5-4e27-87d5-9b796158e0f8",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "350acea6-8860-8016-82d8-c14982f3a8f6",
+          "mode": "list",
+          "cachedResultName": "350acea6-8860-8016-82d8-c14982f3a8f6",
+          "cachedResultUrl": "https://www.notion.so/350acea68860801682d8c14982f3a8f6"
+        },
+        "title": "={{ $json.hata }}",
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Kök Neden |rich_text",
+              "textContent": "={{ $json.kok_neden }}"
+            },
+            {
+              "key": "Çözüm Önerisi |rich_text",
+              "textContent": "={{ $json.cozum }}"
+            },
+            {
+              "key": "Öncelik|rich_text",
+              "textContent": "={{ $json.oncelik }}"
+            },
+            {
+              "key": "Tarih|rich_text",
+              "textContent": "={{ $json.tarih\n}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        16
+      ],
+      "id": "08c62f40-1ac0-4290-8aaa-cd6cdc1eda1c",
+      "name": "Create a database page1",
+      "credentials": {
+        "notionApi": {
+          "id": "Frjb8IG0jKBRRh1a",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Aşağıdaki log dosyasını analiz et ve SADECE şu JSON formatında yanıt ver, başka hiçbir şey yazma:\n\n{\n  \"hata\": \"hatanın kısa açıklaması\",\n  \"kok_neden\": \"kök nedenin açıklaması\",\n  \"cozum\": \"çözüm önerisi\",\n  \"oncelik\": \"Kritik veya Yüksek veya Düşük\"\n}\n\nLog içeriği:\n{{ $('Read/Write Files from Disk').item.json.data }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        32,
+        -304
+      ],
+      "id": "8dee4403-dfaf-48bc-b354-60701af77179",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -144
+      ],
+      "id": "ee1e38a9-7074-4165-af20-4241a7e9b6da",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "dDk9W72GAvTPtIWX",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.item.json.output;\nconst json = JSON.parse(output);\n\nreturn {\n  json: {\n    hata: json.hata,\n    kok_neden: json.kok_neden,\n    cozum: json.cozum,\n    oncelik: json.oncelik,\n    tarih: new Date().toISOString()\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -304
+      ],
+      "id": "7746e305-985e-4008-a620-86992fa2a7d1",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fromEmail": "esranurdogn@gmail.com",
+        "toEmail": "emirgolemen173@gmail.com",
+        "subject": "=Log Hata Analizi ",
+        "html": "=<h2>Log Hata Analizi</h2>\n<p><b>Hata:</b> {{ $('Code in JavaScript1').item.json.hata }}</p>\n<p><b>Kök Neden:</b> {{ $('Code in JavaScript1').item.json.kok_neden }}</p>\n<p><b>Çözüm Önerisi:</b> {{ $('Code in JavaScript1').item.json.cozum }}</p>\n<p><b>Öncelik:</b> {{ $('Code in JavaScript1').item.json.oncelik }}</p>\n<p><b>Tarih:</b> {{ $('Code in JavaScript1').item.json.tarih }}</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        32,
+        16
+      ],
+      "id": "3491e0b1-bebe-41b9-82d2-bc92589afecc",
+      "name": "Send an Email",
+      "webhookId": "1de75e54-82f5-4630-9f06-4ec0df521033",
+      "credentials": {
+        "smtp": {
+          "id": "2g3S8QHr7Maaegam",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json;\nconst output = raw.output || raw.text || raw.response || JSON.stringify(raw);\nconst cleaned = output.replace(/```json/g, '').replace(/```/g, '').trim();\nconst json = JSON.parse(cleaned);\n\nreturn {\n  json: {\n    hata: json.hata,\n    kok_neden: json.kok_neden,\n    cozum: json.cozum,\n    oncelik: json.oncelik,\n    tarih: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -304
+      ],
+      "id": "6fdaff51-57ea-4fc8-8742-1f84367fa378",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a database page1": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create a database page1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "43c895c0-dc99-4430-b790-7424df0567b1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "70b700be290df2f9fc968130b59d8abe1f6b32d6d7be7dd4aefd501325b889ca"
+  },
+  "id": "fvhPaVSgUWEG5CI5",
+  "tags": []
+}
